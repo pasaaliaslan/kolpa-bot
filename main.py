@@ -12,9 +12,7 @@ TOKEN = os.environ['TOKEN']
 INTENTS = discord.Intents.default()
 INTENTS.message_content = True
 
-
 client = commands.Bot(command_prefix="kolpa ", intents=INTENTS)
-
 
 @client.event
 async def on_ready():
@@ -23,7 +21,12 @@ async def on_ready():
 
 @client.command()
 async def sa(ctx):
-    await ctx.send('as')
+    message = """kolpa anlat : Rastgele Sahne
+    kolpa sahneler : Sahne Listesi
+    kolpa anlat [sahne adı]: Bilindik sahne
+    """
+    await ctx.send('as kardeşim')
+    await ctx.send(message)
 
 
 @client.command(pass_context=True)
@@ -38,8 +41,17 @@ async def anlat(ctx, arg=''):
 
     if ctx.author.voice:
         channel = ctx.message.author.voice.channel
-        voice = await channel.connect()
-        voice.play(source)
+        bot_channel = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+
+        try:
+            if bot_channel and bot_channel.channel == channel:
+                bot_channel.play(source)
+
+            else:
+                voice = await channel.connect()
+                voice.play(source)
+        finally:
+            return
 
     else:
         await ctx.send("Kardeşim bi odaya gir konuşçaz")
@@ -51,6 +63,15 @@ async def sg(ctx):
         await ctx.guild.voice_client.disconnect()
         await ctx.send('Anliyorum')
 
+@client.command()
+async def sahneler(ctx):
+    message = 'Bendeki mallar bunlar:'
+
+    for f in os.listdir('./audio'):
+        name = f.split('.')[0]
+        message += f'\n- {name}'
+
+    await ctx.send(message)
 
 try:
     client.run(TOKEN)
